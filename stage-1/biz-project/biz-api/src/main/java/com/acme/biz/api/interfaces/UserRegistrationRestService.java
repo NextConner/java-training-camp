@@ -33,15 +33,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @since
  */
 @FeignClient("${user-registration.rest-service.name}")
-@RequestMapping("/api/user")
+
 @DubboService
 public interface UserRegistrationRestService {
 
     @PostMapping("/register/v1")
     ApiResponse<Boolean> registerUser(@RequestBody @Validated User user);
 
-    @PostMapping("/register/v2")
-    @Deprecated
-    ApiResponse<Boolean> registerUser(@RequestBody @Validated ApiRequest<User> userRequest);
+//    @PostMapping("/register/v2")
+//    @Deprecated
+//    ApiResponse<Boolean> registerUser(@RequestBody @Validated ApiRequest<User> userRequest);
+
+
+    ApiResponse<User> registerUserV2(@RequestBody @Validated User user);
 
 }

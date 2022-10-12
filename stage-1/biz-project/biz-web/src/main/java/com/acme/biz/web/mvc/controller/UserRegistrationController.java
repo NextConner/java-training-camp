@@ -16,8 +16,11 @@
  */
 package com.acme.biz.web.mvc.controller;
 
+import com.acme.biz.api.exception.UserException;
 import com.acme.biz.api.interfaces.UserRegistrationService;
 import com.acme.biz.api.model.User;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,14 +28,20 @@ import org.springframework.web.bind.annotation.RestController;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
+@RequestMapping("/user/")
 @RestController
 public class UserRegistrationController implements UserRegistrationService {
 
     // REST -> { body : {}}
-
+    @PostMapping(value = "/v1/register",produces = "application/json;v=3.0")
     @Override
-    @ResponseBody
     public Boolean registerUser(User user) {
         return Boolean.TRUE;
+    }
+
+    @Override
+    public User register(User user) throws UserException {
+        user.setName("fiegn name");
+        return user;
     }
 }

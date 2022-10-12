@@ -34,11 +34,15 @@ import javax.validation.Valid;
  * @since
  */
 @FeignClient("${user-registration.service.name}")
-@RequestMapping("/user")
+
 @DubboService
 public interface UserRegistrationService {
 
-    @PostMapping(value = "/register",produces = "application/json;v=3.0")
+    @PostMapping(value = "/user/v1/register",produces = "application/json;v=3.0")
     Boolean registerUser(@RequestBody @Validated @Valid User user) throws UserException;
+
+    @PostMapping(value = "/user/v2/register",produces = "application/json;v=3.0")
+    User register(@RequestBody @Validated @Valid User user) throws UserException;
+
 
 }

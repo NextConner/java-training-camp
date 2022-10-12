@@ -13,11 +13,11 @@
     <artifactId>biz-core</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>com.acme</groupId>
-            <artifactId>biz-data</artifactId>
-            <version>${revision}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.acme</groupId>-->
+<!--            <artifactId>biz-data</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

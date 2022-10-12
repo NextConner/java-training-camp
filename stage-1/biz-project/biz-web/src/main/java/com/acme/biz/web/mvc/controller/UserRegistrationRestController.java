@@ -22,7 +22,9 @@ import com.acme.biz.api.interfaces.UserRegistrationRestService;
 import com.acme.biz.api.model.User;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
@@ -31,15 +33,25 @@ import org.springframework.web.servlet.View;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
+@RequestMapping("/api/user")
 @RestController
 public class UserRegistrationRestController implements UserRegistrationRestService {
 
+    @PostMapping("/register/v1")
     @Override
     public ApiResponse<Boolean> registerUser(@RequestBody @Validated User user) {
         return ApiResponse.ok(Boolean.TRUE);
     }
 
+    @PostMapping("/register/v2")
     @Override
+    public ApiResponse<User> registerUserV2(@RequestBody @Validated User user) {
+        user.setName("find");
+        return ApiResponse.ok(user);
+    }
+
+
+
     public ApiResponse<Boolean> registerUser(@RequestBody @Validated ApiRequest<User> userRequest) {
         return ApiResponse.ok(Boolean.TRUE);
     }

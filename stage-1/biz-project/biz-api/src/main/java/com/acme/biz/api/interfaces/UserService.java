@@ -16,6 +16,7 @@
  */
 package com.acme.biz.api.interfaces;
 
+import com.acme.biz.api.ApiResponse;
 import com.acme.biz.api.model.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,13 +33,19 @@ import java.util.Map;
  * @since
  * @deprecated 该接口不再推荐使用，请使用 {@link UserLoginService} 或 {@link UserRegistrationService}
  */
-@FeignClient("${user.service.name}") // user // user-login user-registration
-@RequestMapping("/user")
+@FeignClient(value = "user" , url = "http://127.0.0.1:8080" ,decode404 = true) // user // user-login user-registration
+//@RequestMapping("/user")
 @Deprecated
 public interface UserService {
 
-    @PostMapping("/register")
-    Boolean registerUser(User user);
+    @PostMapping("/user/v1/register")
+    ApiResponse registerUser(User user);
+
+    @PostMapping("/api/user/register/v1")
+    ApiResponse register(User user);
+
+    @PostMapping("/api/user/register/v2")
+    ApiResponse register2(User user);
 
     @PostMapping("/login")
     @Deprecated

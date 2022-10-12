@@ -31,9 +31,10 @@
     <modules>
         <module>biz-api</module>
         <module>biz-web</module>
-        <module>biz-data</module>
+<!--        <module>biz-data</module>-->
         <module>biz-core</module>
         <module>biz-dependencies</module>
+        <module>biz-test</module>
     </modules>
 
     <dependencyManagement>

@@ -17,6 +17,8 @@
 package com.acme.biz.web.mvc.controller;
 
 import com.acme.biz.api.ApiResponse;
+import com.acme.biz.api.interfaces.UserRegistrationService;
+import com.acme.biz.api.interfaces.UserService;
 import com.acme.biz.api.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +41,9 @@ public class EchoController {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/user")
     public ApiResponse<String> echo(@RequestBody User user) {
         return ApiResponse.ok(user.getName());
@@ -52,4 +57,20 @@ public class EchoController {
         ApiResponse response = restTemplate.postForObject(url, user, ApiResponse.class, port);
         return response;
     }
+
+    @PostMapping("/feign/register")
+    public ApiResponse test(@RequestBody User user){
+        return userService.registerUser(user);
+    }
+
+    @PostMapping("/feign/register/user/v1")
+    public ApiResponse testRegister(@RequestBody User user){
+        return  userService.register(user);
+    }
+
+    @PostMapping("/feign/register/user/v2")
+    public ApiResponse testRegister2(@RequestBody User user){
+        return  userService.register2(user);
+    }
+
 }

@@ -41,9 +41,10 @@ public class ApiResponseHandlerMethodReturnValueHandler implements HandlerMethod
 
     @Override
     public boolean supportsReturnType(MethodParameter returnType) {
-        return (AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ResponseBody.class) ||
-                returnType.hasMethodAnnotation(ResponseBody.class))
-                && !ApiResponse.class.equals(returnType.getParameterType());
+//        return (AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ResponseBody.class) ||
+//                returnType.hasMethodAnnotation(ResponseBody.class))
+//                && !ApiResponse.class.equals(returnType.getParameterType());
+        return false;
     }
 
     @Override
