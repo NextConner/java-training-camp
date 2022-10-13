@@ -58,7 +58,7 @@ public class ApiResponseDecoder implements Decoder {
     }
 
     private String getContentType(Response response) {
-        Collection<String> types = response.headers().getOrDefault("Content-Type", Arrays.asList("application/json;v=3"));
+        Collection<String> types = response.headers().getOrDefault("Content-Type", Arrays.asList("application/json;v=5"));
         return types.iterator().next();
     }
 }

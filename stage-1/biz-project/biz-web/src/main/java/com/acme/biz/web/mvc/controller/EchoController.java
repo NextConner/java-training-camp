@@ -41,8 +41,6 @@ public class EchoController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private UserService userService;
 
     @PostMapping("/user")
     public ApiResponse<String> echo(@RequestBody User user) {
@@ -58,19 +56,6 @@ public class EchoController {
         return response;
     }
 
-    @PostMapping("/feign/register")
-    public ApiResponse test(@RequestBody User user){
-        return userService.registerUser(user);
-    }
 
-    @PostMapping("/feign/register/user/v1")
-    public ApiResponse testRegister(@RequestBody User user){
-        return  userService.register(user);
-    }
-
-    @PostMapping("/feign/register/user/v2")
-    public ApiResponse testRegister2(@RequestBody User user){
-        return  userService.register2(user);
-    }
 
 }

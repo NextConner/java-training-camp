@@ -16,12 +16,10 @@
  */
 package com.acme.biz.web;
 
-import com.acme.biz.api.interfaces.UserService;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@EnableFeignClients(basePackageClasses = UserService.class)
 @SpringBootApplication
 public class BizWebApplication {
 

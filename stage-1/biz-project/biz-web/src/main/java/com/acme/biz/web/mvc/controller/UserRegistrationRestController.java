@@ -33,28 +33,19 @@ import org.springframework.web.servlet.View;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-@RequestMapping("/api/user")
+
 @RestController
 public class UserRegistrationRestController implements UserRegistrationRestService {
 
-    @PostMapping("/register/v1")
+
+    @Override
+    public User registerUser1(@RequestBody @Validated User user) {
+        return user;
+    }
+
     @Override
     public ApiResponse<Boolean> registerUser(@RequestBody @Validated User user) {
         return ApiResponse.ok(Boolean.TRUE);
     }
-
-    @PostMapping("/register/v2")
-    @Override
-    public ApiResponse<User> registerUserV2(@RequestBody @Validated User user) {
-        user.setName("find");
-        return ApiResponse.ok(user);
-    }
-
-
-
-    public ApiResponse<Boolean> registerUser(@RequestBody @Validated ApiRequest<User> userRequest) {
-        return ApiResponse.ok(Boolean.TRUE);
-    }
-
 
 }

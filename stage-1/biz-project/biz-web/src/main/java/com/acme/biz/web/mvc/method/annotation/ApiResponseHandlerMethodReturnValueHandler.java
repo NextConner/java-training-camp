@@ -41,10 +41,9 @@ public class ApiResponseHandlerMethodReturnValueHandler implements HandlerMethod
 
     @Override
     public boolean supportsReturnType(MethodParameter returnType) {
-//        return (AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ResponseBody.class) ||
-//                returnType.hasMethodAnnotation(ResponseBody.class))
-//                && !ApiResponse.class.equals(returnType.getParameterType());
-        return false;
+        return (AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ResponseBody.class) ||
+                returnType.hasMethodAnnotation(ResponseBody.class))
+                && !ApiResponse.class.equals(returnType.getParameterType());
     }
 
     @Override
@@ -52,12 +51,11 @@ public class ApiResponseHandlerMethodReturnValueHandler implements HandlerMethod
                                   NativeWebRequest webRequest) throws Exception {
         // TODO 可通过客户端的传递的请求头来切换不同的响应体的内容
         mavContainer.setRequestHandled(true);
-        // returnValue =  POJO
+//         returnValue =  POJO
         ApiResponse apiResponse = ApiResponse.ok(returnValue);
-        HttpServletResponse response = (HttpServletResponse) webRequest.getNativeResponse();
-        response.addHeader("v", "3");
         ServletServerHttpResponse httpOutMessage = createOutputMessage(webRequest);
-        converter.write(apiResponse, MediaType.APPLICATION_JSON, httpOutMessage);
+        //POST 请求测试中, 从 Accept 传递的带版本信息来区分不同版本API, 因此可以同时写入响应头,透传给 Feign Decoder
+        converter.write(apiResponse, MediaType.valueOf(webRequest.getHeader("Accept")), httpOutMessage);
     }
 
     protected ServletServerHttpResponse createOutputMessage(NativeWebRequest webRequest) {

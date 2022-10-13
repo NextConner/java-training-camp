@@ -33,15 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserRegistrationController implements UserRegistrationService {
 
     // REST -> { body : {}}
-    @PostMapping(value = "/v1/register",produces = "application/json;v=3.0")
+//    @PostMapping(value = "/v1/register",produces = "application/json;v=3.0")
     @Override
     public Boolean registerUser(User user) {
         return Boolean.TRUE;
     }
 
-    @Override
-    public User register(User user) throws UserException {
-        user.setName("fiegn name");
-        return user;
-    }
 }
