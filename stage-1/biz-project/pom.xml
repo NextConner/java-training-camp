@@ -35,6 +35,7 @@
         <module>biz-core</module>
         <module>biz-dependencies</module>
         <module>biz-client</module>
+        <module>biz-webflux</module>
     </modules>
 
     <dependencyManagement>
