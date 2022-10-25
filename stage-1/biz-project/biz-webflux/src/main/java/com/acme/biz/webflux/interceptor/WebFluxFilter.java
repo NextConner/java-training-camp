@@ -3,6 +3,10 @@ package com.acme.biz.webflux.interceptor;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.circuitbreaker.utils.CircuitBreakerUtil;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscription;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -29,6 +33,8 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.springframework.web.server.WebHandler;
 import org.springframework.web.server.handler.DefaultWebFilterChain;
+import reactor.core.CoreSubscriber;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -38,6 +44,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,7 +55,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
  * @date 2022/10/24-8:53
  */
 
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE +1)
 @Component
 public class WebFluxFilter implements WebFilter, InitializingBean, DisposableBean, ApplicationListener<ContextRefreshedEvent> {
 
@@ -57,7 +64,7 @@ public class WebFluxFilter implements WebFilter, InitializingBean, DisposableBea
 
     CircuitBreakerRegistry registry;
 
-    Map<Method, RequestMappingInfo> circuitBreakerMap = new HashMap<>();
+    Map<Method, CircuitBreaker> circuitBreakerMap = new HashMap<>();
 
 
     @Override
@@ -68,14 +75,14 @@ public class WebFluxFilter implements WebFilter, InitializingBean, DisposableBea
     @Override
     public void afterPropertiesSet() throws Exception {
         config = CircuitBreakerConfig.custom()
-                .failureRateThreshold(50)
-                .slowCallRateThreshold(50)
+                .failureRateThreshold(10f)
+                .slowCallRateThreshold(10f)
                 .waitDurationInOpenState(Duration.ofMillis(1000))
                 .slowCallDurationThreshold(Duration.ofSeconds(2))
                 .permittedNumberOfCallsInHalfOpenState(3)
-                .minimumNumberOfCalls(10)
-                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED)
-                .slidingWindowSize(5)
+                .minimumNumberOfCalls(5)
+                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
+                .slidingWindowSize(7)
                 .recordException(e -> e instanceof Exception)
                 .recordExceptions(IOException.class, TimeoutException.class)
                 .build();
@@ -85,64 +92,52 @@ public class WebFluxFilter implements WebFilter, InitializingBean, DisposableBea
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
+        AtomicReference<Method> circuitMethod = getMethod(exchange, (DefaultWebFilterChain) chain);
 
-        WebHandler handler = ((DefaultWebFilterChain) chain).getHandler();
-        if (handler instanceof DispatcherHandler) {
+        if (null != circuitMethod  ) {
+            Method method = circuitMethod.get();
 
-            DispatcherHandler dispatcherHandler = (DispatcherHandler) handler;
-            Optional<HandlerMapping> handlerMapping = dispatcherHandler.getHandlerMappings()
-                    .stream().filter(mapping -> mapping instanceof RequestMappingHandlerMapping)
-                    .findFirst();
-
-            if (handlerMapping.isPresent()) {
-                RequestMappingHandlerMapping mapping = (RequestMappingHandlerMapping) handlerMapping.get();
-
-                mapping
-                        .getHandlerInternal(exchange)
-                        .mapNotNull(handlerMethod -> handlerMethod.getMethod())
-                        .subscribe(handlerMethod -> {
-                            if (null != handlerMethod && circuitBreakerMap.containsKey(handlerMethod)) {
-                                RequestMappingInfo mappingInfo = circuitBreakerMap.get(handlerMethod);
-                                CircuitBreaker circuitBreaker = registry.find(mappingInfo.toString()).get();
-                                circuitBreaker.acquirePermission();
-                                final long start = circuitBreaker.getCurrentTimestamp();
-                                try {
-                                    circuitBreaker.decorateRunnable(() -> chain.filter(exchange)).run();
-                                    final long duration = circuitBreaker.getCurrentTimestamp() - start;
-                                    circuitBreaker.onSuccess(duration, circuitBreaker.getTimestampUnit());
-                                    return;
-                                } catch (Exception e) {
-                                    long duration = circuitBreaker.getCurrentTimestamp() - start;
-                                    circuitBreaker.onError(duration, circuitBreaker.getTimestampUnit(), e);
-                                }
-                            }
-                        });
-            /*    mapping.getHandlerInternal(exchange).subscribe(handlerMethod -> {
-                    if (null != handlerMethod && circuitBreakerMap.containsKey(handlerMethod.getMethod())) {
-                        RequestMappingInfo mappingInfo = circuitBreakerMap.get(handlerMethod.getMethod());
-                        CircuitBreaker circuitBreaker = registry.find(mappingInfo.toString()).get();
-                        circuitBreaker.acquirePermission();
-                        final long start = circuitBreaker.getCurrentTimestamp();
-                        try {
-                            System.out.println(1/0);
-                            circuitBreaker.decorateRunnable(() -> chain.filter(exchange)).run();
-                            long duration = circuitBreaker.getCurrentTimestamp() - start;
-                            circuitBreaker.onSuccess(duration, circuitBreaker.getTimestampUnit());
-                            return;
-                        } catch (Exception e) {
-                            long duration = circuitBreaker.getCurrentTimestamp() - start;
-                            circuitBreaker.onError(duration, circuitBreaker.getTimestampUnit(),e);
-                            throw e;
-                        }
-                    }
-                });
-            */
-
+            if (circuitBreakerMap.containsKey(method)) {
+                CircuitBreaker circuitBreaker = circuitBreakerMap.get(method);
+                System.out.println(" 断路器 " + circuitBreaker);
+                final long start = circuitBreaker.getCurrentTimestamp();
+                try {
+                    circuitBreaker.acquirePermission();
+                    Mono<Void> call = circuitBreaker.decorateCallable(() -> chain.filter(exchange)).call();
+                    final long duration = circuitBreaker.getCurrentTimestamp() - start;
+                    circuitBreaker.onSuccess(duration, circuitBreaker.getTimestampUnit());
+                    return call;
+                } catch (Exception e) {
+                    long duration = circuitBreaker.getCurrentTimestamp() - start;
+                    circuitBreaker.onError(duration, circuitBreaker.getTimestampUnit(), e);
+                }
             }
         }
 
         return chain.filter(exchange);
 
+    }
+
+    private AtomicReference<Method> getMethod(ServerWebExchange exchange, DefaultWebFilterChain chain) {
+        DefaultWebFilterChain filterChain = chain;
+
+        AtomicReference<Method> atomicReference = new AtomicReference<>();
+
+        WebHandler webHandler = filterChain.getHandler();
+        if (webHandler instanceof DispatcherHandler) {
+
+            DispatcherHandler dispatcherHandler = (DispatcherHandler) webHandler;
+            for (HandlerMapping handlerMapping : dispatcherHandler.getHandlerMappings()) {
+                if (handlerMapping instanceof RequestMappingHandlerMapping) {
+                    // 从 RequestMappingHandlerMapping 中取出 HandleMethod
+                    RequestMappingHandlerMapping mapping = (RequestMappingHandlerMapping) handlerMapping;
+                    Mono<HandlerMethod> handlerMethodMono = mapping.getHandlerInternal(exchange);
+                    handlerMethodMono.subscribe(handlerMethod -> atomicReference.set(handlerMethod.getMethod()));
+                    break;
+                }
+            }
+        }
+        return atomicReference;
     }
 
     @Override
@@ -155,14 +150,10 @@ public class WebFluxFilter implements WebFilter, InitializingBean, DisposableBea
 
             // RequestMappingInfo 存储了mapping 的具体信息
             Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
-
-
             for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {
-
                 RequestMappingInfo mappingInfo = entry.getKey();
-                Method handlerMethod = entry.getValue().getMethod();
-                registry.circuitBreaker(mappingInfo.toString(), config);
-                circuitBreakerMap.put(handlerMethod, mappingInfo);
+                Method method = entry.getValue().getMethod();
+                circuitBreakerMap.put(method, registry.circuitBreaker(mappingInfo.toString(), config));
             }
 
         }
