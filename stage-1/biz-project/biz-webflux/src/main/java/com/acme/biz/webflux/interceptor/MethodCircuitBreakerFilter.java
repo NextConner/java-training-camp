@@ -90,7 +90,7 @@ public class MethodCircuitBreakerFilter implements WebFilter, InitializingBean, 
 
         if (circuitBreakerMap.containsKey(method)) {
             CircuitBreaker circuitBreaker = circuitBreakerMap.get(method);
-            if (!circuitBreaker.getState().equals(CircuitBreaker.State.CLOSED)) {
+            if (circuitBreaker.getState().equals(CircuitBreaker.State.OPEN)) {
                 //断路器打开后，路由到fallback 方法
                 exchange = rebuildExchange(exchange);
             }
