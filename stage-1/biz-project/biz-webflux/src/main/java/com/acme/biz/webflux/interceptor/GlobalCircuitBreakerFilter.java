@@ -26,11 +26,11 @@ import java.util.function.Function;
  * @date 2022/10/24-8:53
  */
 
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @Component
 public class GlobalCircuitBreakerFilter implements WebFilter, InitializingBean, DisposableBean {
 
-    private Logger logger = LoggerFactory.getLogger(GlobalCircuitBreakerFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(GlobalCircuitBreakerFilter.class);
 
     CircuitBreakerConfig config;
 
@@ -56,17 +56,7 @@ public class GlobalCircuitBreakerFilter implements WebFilter, InitializingBean, 
 
     @Override
     public void afterPropertiesSet() {
-        config = CircuitBreakerConfig.custom().failureRateThreshold(10f)
-                .slowCallRateThreshold(10f)
-                .waitDurationInOpenState(Duration.ofMillis(1000))
-                .slowCallDurationThreshold(Duration.ofSeconds(2))
-                .permittedNumberOfCallsInHalfOpenState(3)
-                .minimumNumberOfCalls(5)
-                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
-                .slidingWindowSize(7)
-                .recordException(e -> e instanceof Exception)
-                .recordExceptions(IOException.class, TimeoutException.class)
-                .build();
+        config = CircuitBreakerConfig.custom().build();
         registry = CircuitBreakerRegistry.of(config);
         circuitBreaker = registry.circuitBreaker(GlobalCircuitBreakerFilter.class.getSimpleName(), config);
     }
