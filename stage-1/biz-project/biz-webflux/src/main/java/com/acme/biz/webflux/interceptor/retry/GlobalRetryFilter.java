@@ -44,7 +44,7 @@ public class GlobalRetryFilter implements WebFilter, InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        config = RetryConfig.custom().maxAttempts(0).build();
+        config = RetryConfig.custom().maxAttempts(1).build();
         registry = RetryRegistry.of(config);
         retry = registry.retry(GlobalRetryFilter.class.getSimpleName(), config);
     }
