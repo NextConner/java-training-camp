@@ -23,8 +23,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.reactive.DispatcherHandler;
-import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.result.method.RequestMappingInfo;
 import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.server.*;
@@ -33,40 +31,35 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * @author jintaoZou
  * @date 2022/10/24-8:53
  */
-
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Component
-public class MethodCircuitBreakerFilter implements WebFilter, InitializingBean, DisposableBean, ApplicationListener<ContextRefreshedEvent> {
+public class MethodCircuitBreakerFilter implements GenericWebFilter<CircuitBreaker>, InitializingBean, DisposableBean, ApplicationListener<ContextRefreshedEvent> {
 
     private final Logger logger = LoggerFactory.getLogger(MethodCircuitBreakerFilter.class);
 
     CircuitBreakerConfig config;
     CircuitBreakerRegistry registry;
-    Map<Method, CircuitBreaker> circuitBreakerMap = new HashMap<>();
+    Map<HandlerMethod, CircuitBreaker> circuitBreakerMap = new HashMap<>();
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         circuitBreakerMap.values().forEach(CircuitBreaker::reset);
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         config = CircuitBreakerConfig.custom()
                 .failureRateThreshold(10f)
                 .slowCallRateThreshold(10f)
@@ -85,11 +78,8 @@ public class MethodCircuitBreakerFilter implements WebFilter, InitializingBean, 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
-        AtomicReference<Method> circuitMethod = getMethod(exchange, (DefaultWebFilterChain) chain);
-        Method method = circuitMethod.get();
-
-        if (circuitBreakerMap.containsKey(method)) {
-            CircuitBreaker circuitBreaker = circuitBreakerMap.get(method);
+        CircuitBreaker circuitBreaker = getCurrentOperator(exchange, chain);
+        if (null != circuitBreaker) {
             if (circuitBreaker.getState().equals(CircuitBreaker.State.OPEN)) {
                 //断路器打开后，路由到fallback 方法
                 exchange = rebuildExchange(exchange);
@@ -109,6 +99,11 @@ public class MethodCircuitBreakerFilter implements WebFilter, InitializingBean, 
                     });
         }
         return chain.filter(exchange);
+    }
+
+    @Override
+    public CircuitBreaker getCurrentOperator(ServerWebExchange exchange, WebFilterChain chain) {
+        return circuitBreakerMap.get(getHandleMethod(exchange, (DefaultWebFilterChain) chain));
     }
 
     private ServerWebExchange rebuildExchange(ServerWebExchange exchange) {
@@ -161,27 +156,6 @@ public class MethodCircuitBreakerFilter implements WebFilter, InitializingBean, 
         return exchange;
     }
 
-    private AtomicReference<Method> getMethod(ServerWebExchange exchange, DefaultWebFilterChain chain) {
-        DefaultWebFilterChain filterChain = chain;
-
-        AtomicReference<Method> atomicReference = new AtomicReference<>();
-
-        WebHandler webHandler = filterChain.getHandler();
-        if (webHandler instanceof DispatcherHandler) {
-
-            DispatcherHandler dispatcherHandler = (DispatcherHandler) webHandler;
-            for (HandlerMapping handlerMapping : dispatcherHandler.getHandlerMappings()) {
-                if (handlerMapping instanceof RequestMappingHandlerMapping) {
-                    // 从 RequestMappingHandlerMapping 中取出 HandleMethod
-                    RequestMappingHandlerMapping mapping = (RequestMappingHandlerMapping) handlerMapping;
-                    Mono<HandlerMethod> handlerMethodMono = mapping.getHandlerInternal(exchange);
-                    handlerMethodMono.subscribe(handlerMethod -> atomicReference.set(handlerMethod.getMethod()));
-                    break;
-                }
-            }
-        }
-        return atomicReference;
-    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -195,8 +169,7 @@ public class MethodCircuitBreakerFilter implements WebFilter, InitializingBean, 
             Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
             for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : handlerMethods.entrySet()) {
                 RequestMappingInfo mappingInfo = entry.getKey();
-                Method method = entry.getValue().getMethod();
-                circuitBreakerMap.put(method, registry.circuitBreaker(mappingInfo.toString(), config));
+                circuitBreakerMap.put(entry.getValue(), registry.circuitBreaker(mappingInfo.toString(), config));
             }
 
         }

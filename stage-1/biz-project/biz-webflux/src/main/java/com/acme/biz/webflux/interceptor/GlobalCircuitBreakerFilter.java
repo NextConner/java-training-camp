@@ -16,8 +16,6 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
@@ -26,7 +24,7 @@ import java.util.function.Function;
  * @date 2022/10/24-8:53
  */
 
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Component
 public class GlobalCircuitBreakerFilter implements WebFilter, InitializingBean, DisposableBean {
 
@@ -46,24 +44,36 @@ public class GlobalCircuitBreakerFilter implements WebFilter, InitializingBean, 
         return Mono.fromCallable(() -> chain.filter(exchange))
                 .transform(CircuitBreakerOperator.of(circuitBreaker))
                 .flatMap((Function<Mono<Void>, Mono<Void>>) voidMono -> voidMono)
+                .doOnSuccess(v -> circuitBreaker.onSuccess(System.nanoTime() - start, circuitBreaker.getTimestampUnit()))
                 .doOnError(throwable -> {
                     logger.error("circuit error catch :{}", throwable);
                     circuitBreaker.onError(System.nanoTime() - start, circuitBreaker.getTimestampUnit(), throwable);
-                }).then(chain.filter(exchange));
-
+                });
     }
 
 
     @Override
     public void afterPropertiesSet() {
-        config = CircuitBreakerConfig.custom().build();
+        config = countBasedConfig(1000, 30f);
+
         registry = CircuitBreakerRegistry.of(config);
         circuitBreaker = registry.circuitBreaker(GlobalCircuitBreakerFilter.class.getSimpleName(), config);
     }
 
-    @Override
-    public void destroy() throws Exception {
+    private CircuitBreakerConfig countBasedConfig(int windowSize, float failureRate) {
+        return CircuitBreakerConfig.custom()
+                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
+                .slidingWindowSize(windowSize)
+                .failureRateThreshold(failureRate)
+                .ignoreExceptions(TimeoutException.class)
+                .writableStackTraceEnabled(false)
+                .automaticTransitionFromOpenToHalfOpenEnabled(true)
+                .build();
+    }
 
+    @Override
+    public void destroy() {
+        registry.getAllCircuitBreakers().forEach(CircuitBreaker::reset);
     }
 
 
