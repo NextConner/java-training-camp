@@ -1,0 +1,17 @@
+resilience4j:
+  circuitbreaker:
+    enabled: true
+    instances:
+      backendA:
+        baseConfig: default
+    configs:
+      default:
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 60
+        permittedNumberOfCallsInHalfOpenState: 10
+        registerHealthIndicator: true
+        slidingWindowSize: 100
+        waitDurationInOpenState: 10000
+      someShared:
+        permittedNumberOfCallsInHalfOpenState: 10
+        slidingWindowSize: 50
