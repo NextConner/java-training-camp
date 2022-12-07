@@ -16,9 +16,21 @@
  */
 package com.acme.registry.eureka;
 
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
+import org.slf4j.helpers.MessageFormatter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+import java.util.Date;
 
 /**
  * Eureka Server 启动类
@@ -26,11 +38,29 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-@EnableAutoConfiguration
+
+@RestController
+@Configuration
 @EnableEurekaServer
+@SpringBootApplication
 public class EurekaServerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(EurekaServerApplication.class, args);
     }
+
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Autowired
+    EurekaClient discoveryClient;
+
+    @GetMapping("/hello")
+    public String hello(String appName) {
+
+        String response = restTemplate.getForObject(URI.create("http://" + appName + "/hello"), String.class);
+        System.out.println(MessageFormatter.format("get response is : [ {} ]", response));
+        return response;
+    }
+
 }

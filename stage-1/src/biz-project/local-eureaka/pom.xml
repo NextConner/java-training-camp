@@ -28,23 +28,28 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-<!--        &lt;!&ndash; Micrometer 使用 Prometheus 协议作为注册中心 &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>io.micrometer</groupId>-->
-<!--            <artifactId>micrometer-registry-prometheus</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
 
-<!--        &lt;!&ndash; Micrometer Metrics 数据使用 Prometheus 通讯协议进行推送到 Pushgateway&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>io.prometheus</groupId>-->
-<!--            <artifactId>simpleclient_pushgateway</artifactId>-->
-<!--        </dependency>-->
+        <!-- Micrometer 使用 Prometheus 协议作为注册中心 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
 
-<!--        &lt;!&ndash; Micrometer 使用 InfluxDB 协议作为注册中心 &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>io.micrometer</groupId>-->
-<!--            <artifactId>micrometer-registry-influx</artifactId>-->
-<!--        </dependency>-->
+        <!-- Micrometer Metrics 数据使用 Prometheus 通讯协议进行推送到 Pushgateway-->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_pushgateway</artifactId>
+        </dependency>
+
+        <!-- Micrometer 使用 InfluxDB 协议作为注册中心 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-influx</artifactId>
+        </dependency>
 
     </dependencies>
 

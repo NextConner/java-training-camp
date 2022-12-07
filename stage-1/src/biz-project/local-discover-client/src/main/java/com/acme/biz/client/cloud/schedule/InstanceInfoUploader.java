@@ -5,10 +5,14 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.loadbalancer.ServerListUpdater;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
 public class InstanceInfoUploader implements ServerListUpdater, EurekaEventListener {
+
+    private Logger logger = LoggerFactory.getLogger(InstanceInfoUploader.class);
 
     private final EurekaClient eurekaClient;
 
@@ -34,12 +38,13 @@ public class InstanceInfoUploader implements ServerListUpdater, EurekaEventListe
 
     @Override
     public void start(UpdateAction updateAction) {
+        logger.info("开始更新...");
         this.updateAction = updateAction;
     }
 
     @Override
     public void stop() {
-
+        logger.info("停止更新...");
     }
 
     @Override

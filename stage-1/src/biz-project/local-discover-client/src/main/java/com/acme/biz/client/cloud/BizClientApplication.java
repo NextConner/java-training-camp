@@ -16,10 +16,15 @@
  */
 package com.acme.biz.client.cloud;
 
+import com.acme.biz.client.cloud.config.UserServiceRibbonClientConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * biz-client 应用启动类
@@ -27,14 +32,20 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-@EnableAutoConfiguration
+@RestController
+@SpringBootApplication
 @EnableDiscoveryClient
 @EnableScheduling
+@RibbonClient(name = "biz-client",configuration = UserServiceRibbonClientConfiguration.class)
 public class BizClientApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BizClientApplication.class, args);
     }
 
+    @GetMapping("/hello")
+    public String hello(){
+        return "Hello , " + System.currentTimeMillis();
+    }
 
 }
