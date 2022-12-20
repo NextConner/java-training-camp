@@ -52,8 +52,6 @@ public class EurekaServerApplication {
     @Autowired
     RestTemplate restTemplate;
 
-    @Autowired
-    EurekaClient discoveryClient;
 
     @GetMapping("/hello")
     public String hello(String appName) {

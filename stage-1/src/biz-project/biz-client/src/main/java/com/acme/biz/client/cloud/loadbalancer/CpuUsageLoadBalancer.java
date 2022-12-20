@@ -26,8 +26,10 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * TODO Comment
@@ -47,13 +49,17 @@ public class CpuUsageLoadBalancer implements ReactorServiceInstanceLoadBalancer 
         ServiceInstanceListSupplier serviceInstanceListSupplier = serviceInstanceListSupplierProvider.getIfAvailable();
         Flux<List<ServiceInstance>> flux = serviceInstanceListSupplier.get();
         List<ServiceInstance> serviceInstances = flux.blockFirst();
+        //TODO 返回当前cpu利用率最低的实例信息
+        Map<Integer ,ServiceInstance> instanceMap = new HashMap<>();
         for (ServiceInstance serviceInstance : serviceInstances) {
             Map<String, String> metadata = serviceInstance.getMetadata();
             String cpuUsage = metadata.get("cpu-usage");
             Integer usage = Integer.valueOf(cpuUsage);
             // TODO 完成 CPU 利用率的算法实现
+            instanceMap.put(usage,serviceInstance);
         }
-        return Mono.justOrEmpty(new DefaultResponse(serviceInstances.get(0)));
+        Integer sortedKey = instanceMap.keySet().stream().sorted().collect(Collectors.toList()).get(0);
+        return Mono.justOrEmpty(new DefaultResponse(instanceMap.get(sortedKey)));
     }
 
 //    /**

@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.client.serviceregistry.Registration;
-import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
 import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,6 +62,9 @@ public class UserServiceRibbonClientConfiguration {
     @Autowired
     private EurekaClient eurekaClient;
 
+    @Autowired
+    private StringRedisTemplateWrapper templateWrapper;
+
     private ApplicationInfoManager applicationInfoManager;
 
     @PostConstruct
@@ -81,8 +82,18 @@ public class UserServiceRibbonClientConfiguration {
         logger.info("Upload Eureka InstanceInfo's metadata");
     }
 
+    @Scheduled(fixedRate = 5000L, initialDelay = 10L)
+    public void doCreateMeterInfo() {
+
+        templateWrapper.opsForValue().set("name", "joker:" + System.nanoTime());
+        logger.info("redis set name over!");
+        String value = (String) templateWrapper.opsForValue().get("name");
+        logger.info("setted value:{}", value);
+    }
+
     /**
      * 基于默认的 MXBean 入口 {@link  ManagementFactory} 获取当前应用或系统的CPU使用率
+     *
      * @return
      */
     private Integer getCpuUsage() {
