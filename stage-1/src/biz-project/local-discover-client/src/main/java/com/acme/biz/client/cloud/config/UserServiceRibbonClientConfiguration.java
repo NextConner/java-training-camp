@@ -65,7 +65,7 @@ public class UserServiceRibbonClientConfiguration {
     @Autowired
     private StringRedisTemplateWrapper templateWrapper;
 
-    private ApplicationInfoManager applicationInfoManager;
+    public static ApplicationInfoManager applicationInfoManager;
 
     @PostConstruct
     public void init() {
@@ -78,6 +78,7 @@ public class UserServiceRibbonClientConfiguration {
         Map<String, String> metadata = instanceInfo.getMetadata();
         metadata.put("timestamp", String.valueOf(System.currentTimeMillis()));
         metadata.put("cpu-usage", String.valueOf(getCpuUsage()));
+
         instanceInfo.setIsDirty();
         logger.info("Upload Eureka InstanceInfo's metadata");
     }

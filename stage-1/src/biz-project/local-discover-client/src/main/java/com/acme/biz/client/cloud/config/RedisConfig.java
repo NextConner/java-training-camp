@@ -22,4 +22,9 @@ public class RedisConfig {
         return templateWrapper;
     }
 
+    @Bean
+    public RedisConnectionProxy redisConnectionProxy(){
+        return new RedisConnectionProxy();
+    }
+
 }

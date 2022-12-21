@@ -1,22 +1,14 @@
 package com.acme.biz.client.cloud.config;
 
-import org.springframework.data.redis.connection.DataType;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.*;
-import org.springframework.data.redis.core.query.SortQuery;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.script.RedisScript;
-import org.springframework.data.redis.core.script.ScriptExecutor;
-import org.springframework.data.redis.core.types.RedisClientInfo;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.lang.Nullable;
 
 import java.io.Closeable;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class StringRedisTemplateWrapper extends RedisTemplate {
 

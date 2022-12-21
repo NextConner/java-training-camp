@@ -1,42 +1,36 @@
 package com.acme.biz.client.cloud.config;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.*;
 
 import java.util.List;
 
-public class LettuceRedisConnectionWrapper extends AbstractRedisConnection implements MeterBinder {
-
+public class LettuceRedisConnectionWrapper extends AbstractRedisConnection{
     private RedisConnection delegate;
 
     public LettuceRedisConnectionWrapper(RedisConnection delegate) {
         this.delegate = delegate;
     }
 
-    private static MeterRegistry registry;
-    private static Counter redisCounter;
+    public LettuceRedisConnectionWrapper(){}
 
-    private Counter redisSetSuccessCounter;
-    static  final String  BINDER_KEY = "redis.counter";
+    public RedisConnection getDelegate() {
+        return delegate;
+    }
 
-    @Override
-    public void bindTo(MeterRegistry meterRegistry) {
-        this.registry = meterRegistry;
-        this.redisCounter = Counter.builder(BINDER_KEY).register(registry);
-        this.redisSetSuccessCounter = Counter.builder(BINDER_KEY+".success").register(registry);
+    public void setDelegate(RedisConnection delegate) {
+        this.delegate = delegate;
     }
 
     @Override
     public Boolean set(byte[] key, byte[] value) {
-        redisCounter.increment();
-        Boolean set = delegate.set(key, value);
-        if(set){
-            redisSetSuccessCounter.increment();
-        }
-        return set;
+        return delegate.set(key, value);
+    }
+
+    @Override
+    public byte[] get(byte[] key) {
+        return delegate.get(key);
     }
 
     @Override
