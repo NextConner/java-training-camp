@@ -3,8 +3,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.acme</groupId>
         <artifactId>biz-project</artifactId>
+        <groupId>com.acme</groupId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -13,14 +13,11 @@
 
     <artifactId>local-discover-client</artifactId>
 
-    <name>local-discover-client Maven Webapp</name>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
 
-    <properties>
-        <spring-boot.version>2.1.13.RELEASE</spring-boot.version>
-        <spring-cloud.version>Greenwich.SR6</spring-cloud.version>
-    </properties>
+<!--    <properties>-->
+<!--        <spring-boot.version>2.1.13.RELEASE</spring-boot.version>-->
+<!--        <spring-cloud.version>Greenwich.SR6</spring-cloud.version>-->
+<!--    </properties>-->
 
     <dependencies>
 <!--        <dependency>-->

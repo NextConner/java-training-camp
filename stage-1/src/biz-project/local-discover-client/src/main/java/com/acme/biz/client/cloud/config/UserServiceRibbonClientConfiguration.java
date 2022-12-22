@@ -16,19 +16,13 @@
  */
 package com.acme.biz.client.cloud.config;
 
-import com.acme.biz.client.cloud.schedule.InstanceInfoUploader;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
-import com.netflix.loadbalancer.ServerListUpdater;
 import com.sun.management.OperatingSystemMXBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.ClassUtils;
@@ -37,25 +31,12 @@ import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 
-/**
- * {@link com.acme.biz.api.interfaces.UserService}
- * {@link RibbonClientConfiguration}
- *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @see RibbonClientConfiguration
- * @since 1.0.0
- */
+
 @Configuration
 public class UserServiceRibbonClientConfiguration {
 
     private Logger logger = LoggerFactory.getLogger(UserServiceRibbonClientConfiguration.class);
 
-    @Bean
-    @ConditionalOnClass(EurekaClient.class)
-    @ConditionalOnMissingBean
-    public ServerListUpdater eurekaDiscoveryEventServerListUpdater(EurekaClient eurekaClient) {
-        return new InstanceInfoUploader(eurekaClient);
-    }
 
     private static final boolean HOTSPOT_JVM = ClassUtils.isPresent("com.sun.management.OperatingSystemMXBean", null);
 
