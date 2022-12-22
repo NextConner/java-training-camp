@@ -33,9 +33,9 @@ import java.util.Map;
 
 
 @Configuration
-public class UserServiceRibbonClientConfiguration {
+public class ServiceInstanceInfoUpdateConfiguration {
 
-    private Logger logger = LoggerFactory.getLogger(UserServiceRibbonClientConfiguration.class);
+    private Logger logger = LoggerFactory.getLogger(ServiceInstanceInfoUpdateConfiguration.class);
 
 
     private static final boolean HOTSPOT_JVM = ClassUtils.isPresent("com.sun.management.OperatingSystemMXBean", null);

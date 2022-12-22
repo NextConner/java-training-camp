@@ -1,7 +1,6 @@
 package com.acme.biz.client.cloud.config;
 
 
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -11,13 +10,11 @@ import net.bytebuddy.implementation.bind.annotation.*;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static com.acme.biz.client.cloud.config.UserServiceRibbonClientConfiguration.applicationInfoManager;
+import static com.acme.biz.client.cloud.config.ServiceInstanceInfoUpdateConfiguration.applicationInfoManager;
 
 public class RedisConnectionProxy implements MeterBinder {
 
