@@ -1,7 +1,7 @@
 FROM openjdk:8u312-jre-slim-buster
 
 WORKDIR /data/cycube/
-COPY  ../target/local-eureka.jar /data/cycube/
+COPY  /target/local-eureka-0.0.1-SNAPSHOT.jar /data/cycube/
 
 EXPOSE 12345
 
@@ -12,4 +12,4 @@ ENV EXT_ARG="-Dserver.port=12345 "
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-ENTRYPOINT java  $JAVA_OPTS $EXT_ARG -Dserver.port=$APP_PORT -jar /data/cycube/demo.jar
+ENTRYPOINT java  $JAVA_OPTS $EXT_ARG -Dserver.port=$APP_PORT -jar /data/cycube/local-eureka-0.0.1-SNAPSHOT.jar
