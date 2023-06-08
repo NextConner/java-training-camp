@@ -1,0 +1,13 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+datasources:
+  write:
+    jdbc-url: jdbc:mysql://127.0.0.1:13306/test_db
+    user-name: root
+    password: 123456
+  read:
+    jdbc-url: jdbc:mysql://127.0.0.1:13307/test_db
+    user-name: root
+    password: 123456
